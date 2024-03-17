@@ -11,6 +11,8 @@ library(readxl)         # carregar arquivos
 library(dplyr)          # manipula dados
 library(tidyr)          # manipula dados (funcao pivot_longer)
 library(ggplot2)        # gera gráficos
+library(patchwork)      # unir gráficos
+library(corrplot)       # mapa de Correlação
 
 
 
@@ -174,6 +176,17 @@ ggplot(df_long_num, aes(x = value)) +
 rm(df_long_num)
 
 
+## Mapa de Correlação
+
+cor(df_numericas)
+corrplot(cor(df_numericas),
+         method = "color",
+         type = "upper",
+         addCoef.col = 'springgreen2',
+         tl.col = "black",
+         tl.srt = 45)
+
+
 
 
 #### Explorando as Variáveis Categóricas
@@ -183,16 +196,9 @@ summary(df_categoricas)
 
 
 ## Visualizando Através de Gráficos
-head(df_categoricas)
+names(df_categoricas)
 
-# Transforma o dataframe de formato largo para longo
-df_long_cat <- df_categoricas %>% 
-  pivot_longer(cols = everything(), names_to = "categories", values_to = "values")
-
-
-library(patchwork)
-
-# Gráfico para corredor_armazem
+# Gráfico de Barras
 grafico_corredor <- ggplot(df_categoricas, aes(x = corredor_armazem)) +
   geom_bar() +
   labs(title = "Distribuição de corredor_armazem")
@@ -214,10 +220,11 @@ grafico_genero <- ggplot(df_categoricas, aes(x = genero)) +
 
 # Colocando os gráficos em um único plot
 grafico_completo <- (grafico_corredor | grafico_modo_envio) / (grafico_prioridade | grafico_genero)
-
 grafico_completo
 
 rm(grafico_corredor, grafico_modo_envio, grafico_prioridade, grafico_genero)
+
+
 
 
 
@@ -229,6 +236,32 @@ rm(grafico_corredor, grafico_modo_envio, grafico_prioridade, grafico_genero)
 summary(df_target)
 
 # Visualizando Através de Gráficos
+ggplot(df_target, aes(x = entregue_no_prazo)) +
+  geom_bar() +
+  labs(title = "Distribuição de entregue_no_prazo")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
