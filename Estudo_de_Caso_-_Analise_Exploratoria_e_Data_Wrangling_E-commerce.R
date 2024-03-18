@@ -57,6 +57,7 @@ library(corrplot)       # mapa de Correlação
 
 
 
+####   PARTE 1   ####
 
 
 ## Carregando os Dados
@@ -176,7 +177,7 @@ ggplot(df_long_num, aes(x = value)) +
 rm(df_long_num)
 
 
-## Mapa de Correlação
+## Mapa de Correlação (somente variáveis numéricas)
 
 cor(df_numericas)
 corrplot(cor(df_numericas),
@@ -222,12 +223,14 @@ grafico_genero <- ggplot(df_categoricas, aes(x = genero)) +
 grafico_completo <- (grafico_corredor | grafico_modo_envio) / (grafico_prioridade | grafico_genero)
 grafico_completo
 
-rm(grafico_corredor, grafico_modo_envio, grafico_prioridade, grafico_genero)
+rm(grafico_corredor, grafico_modo_envio, grafico_prioridade, grafico_genero, grafico_completo)
 
 
 
-
-
+head(df_categoricas)
+head(df_target)
+str(df_categoricas)
+str(df_target)
 
 
 ## Explorando a Variável Alvo
@@ -240,6 +243,74 @@ ggplot(df_target, aes(x = entregue_no_prazo)) +
   geom_bar() +
   labs(title = "Distribuição de entregue_no_prazo")
 
+
+
+#### Criando Gráficos para Análise das Variávels Categóricas x Variável Target
+
+## Visualizando Através de Gráficos
+names(df_categoricas)
+
+# Gráfico de barras empilhadas para corredor_armazem
+grafico_corredor <- ggplot(cbind(df_categoricas, df_target), aes(x = corredor_armazem, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(x = "Corredor do Armazém", y = "Contagem") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Gráfico de barras empilhadas para modo_envio
+grafico_modo_envio <- ggplot(cbind(df_categoricas, df_target), aes(x = modo_envio, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(x = "Modo de Envio", y = "Contagem") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Gráfico de barras empilhadas para prioridade_produto
+grafico_prioridade <- ggplot(cbind(df_categoricas, df_target), aes(x = prioridade_produto, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(x = "Prioridade do Produto", y = "Contagem") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Gráfico de barras empilhadas para genero
+grafico_genero <- ggplot(cbind(df_categoricas, df_target), aes(x = genero, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(x = "Gênero", y = "Contagem") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Combinando os gráficos em um único plot
+grafico_completo <- (grafico_corredor | grafico_modo_envio) / (grafico_prioridade | grafico_genero)
+grafico_completo
+
+rm(grafico_corredor, grafico_modo_envio, grafico_prioridade, grafico_genero, grafico_completo)
+
+
+
+#### Conclusão da Parte 1:
+
+## Algumas das coisas que encontramos neste conjunto de dados são:
+  
+# - Os dados parecem válidos e não há defeitos maiores/significativos.
+# - Existem algumas distribuições que são um pouco *assimétricas*, isso deve ser lembrado se usarmos modelos que exijam a suposição de uma
+#   distribuição normal.
+# - Não detectamos problemas de multicolinearidade.
+# - Alguns *recursos* parecem completamente não correlacionados.
+# - Dos recursos categóricos, `modo_envio` , `corredor_armazem` e `importancia_produto` parecem úteis para prever a variável target.
+
+
+
+
+####   PARTE 2   ####
+
+# - Esta parte 2 terá como foco perguntas de negócio.
+
+
+
+## 1) Os atrasos nas entregas estão igualmente distribuídos pelos modos de envio? Há diferenças discrepantes?
 
 
 
