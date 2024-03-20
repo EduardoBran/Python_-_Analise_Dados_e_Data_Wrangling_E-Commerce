@@ -405,17 +405,221 @@ rm(grafico_modo_envio_abs, grafico_modo_envio_per)
 
 
 
+
 #### Pergunta 2:
 #### Há diferença significativa no atraso das entregas quando o produto tem prioridade baixa ou média?
 
+## Criando Tabelas de Agragação
+names(df)
+
+# Tabela de agregação 1 (agrupamento através de 'entregue_no_prazo' e 'prioridade_produto' e retornando a quantidade de valores únicos)
+df_group1 <- df %>% 
+  group_by(entregue_no_prazo, prioridade_produto) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group1
+
+# Tabela de agregação 2 (agrupamento através de 'entregue_no_prazo' e retornando a quantidade de valores únicos)
+df_group2 <- df %>% 
+  group_by(entregue_no_prazo) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group2
+
+# Tabela de agregação 3 (concatenando Tabela de Agregação 1 e Tabela de Agregação 2 com base na coluna "entregue_no_prazo")
+df_group3 <- merge(df_group1, df_group2, by = 'entregue_no_prazo')
+df_group3
+
+# Tabela de agregação 4 (agrupamento através de 'prioridade_produto'  e retornando a quantidade de valores únicos)
+df_group4 <- df %>% 
+  group_by(prioridade_produto) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group4
+
+# Tabela de agregação 5 (concatenando Tabela de Agregação 1 e Tabela de Agregação 4 com base na coluna "prioridade_produto")
+df_group5 <- merge(df_group1, df_group4, by = 'prioridade_produto')
+df_group5
+
+
+## Usando Tabela de Agregação 5
+
+# Criando nova coluna Percentual
+df_group5$Percentual <- (df_group5$total.x / df_group5$total.y) * 100
+df_group5
+
+# Renomear as colunas em df_group5
+df_group5 <- df_group5 %>%
+  rename(Status_Entrega_Prazo = entregue_no_prazo,
+         Prioridade_do_Produto = prioridade_produto,
+         Total_Por_Categoria = total.x,
+         Total_Geral = total.y,
+         Percentual = Percentual)
+df_group5
+
+# Transformando para factor a coluna Status_Entrega_Prazo
+df_group5$Status_Entrega_Prazo <- as.factor(df_group5$Status_Entrega_Prazo)
+str(df_group5)
+
+
+rm(df_group1, df_group2, df_group3, df_group4)
+
+
+## Gerando Gráficos Para Responder a Pergunta de Negócio
+
+# Gráfico 1 - Análise em Valores Absolutos (utilizando o dataframe df)
+
+# Gráfico de barras empilhadas para modo_envio
+grafico_modo_envio_abs <- ggplot(cbind(df_categoricas, df_target), aes(x = prioridade_produto, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(title = "Entregas com Base na Prioridade do Produto (Absoluto)",
+       x = "Prioridade", y = "Contagem", fill = "Status de Entrega no Prazo") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+#grafico_modo_envio_abs
+
+
+# Gráfico 2 - Análise em Valores Percentuais (utilizando o dataframe df_group5)
+
+grafico_modo_envio_per <- ggplot(df_group5, aes(x = Prioridade_do_Produto, y = Percentual, fill = Status_Entrega_Prazo)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("0" = "red", "1" = "green")) +
+  labs(title = "Entregas com Base na Prioridade do Produto (Percentual)",
+       x = "Prioridade", y = "Percentual", fill = "Status de Entrega no Prazo") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+#grafico_modo_envio_per
+
+
+# Combinando os gráficos em um único plot
+grafico_completo <- grafico_modo_envio_abs | grafico_modo_envio_per
+grafico_completo
+
+rm(grafico_modo_envio_abs, grafico_modo_envio_per)
+
+
+# -> Resposta: as respostas estão nos gráficos.
 
 
 
 
+#### Pergunta 3:
+#### Quais corredores armazenam produtos com maior proporção de entregas com atraso?
+names(df)
+
+# Tabela de agregação 1 (agrupamento através de 'entregue_no_prazo' e 'corredor_armazem' e retornando a quantidade de valores únicos)
+df_group1 <- df %>% 
+  group_by(entregue_no_prazo, corredor_armazem) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group1
+
+# Tabela de agregação 2 (agrupamento através de 'entregue_no_prazo' e retornando a quantidade de valores únicos)
+df_group2 <- df %>% 
+  group_by(entregue_no_prazo) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group2
+
+# Tabela de agregação 3 (concatenando Tabela de Agregação 1 e Tabela de Agregação 2 com base na coluna "entregue_no_prazo")
+df_group3 <- merge(df_group1, df_group2, by = 'entregue_no_prazo')
+df_group3
+
+# Tabela de agregação 4 (agrupamento através de 'corredor_armazem'  e retornando a quantidade de valores únicos)
+df_group4 <- df %>% 
+  group_by(corredor_armazem) %>% 
+  summarise(total = n(), .groups = "drop")
+df_group4
+
+# Tabela de agregação 5 (concatenando Tabela de Agregação 1 e Tabela de Agregação 4 com base na coluna "corredor_armazem")
+df_group5 <- merge(df_group1, df_group4, by = 'corredor_armazem')
+df_group5
+
+
+## Usando Tabela de Agregação 5
+
+# Criando nova coluna Percentual
+df_group5$Percentual <- (df_group5$total.x / df_group5$total.y) * 100
+df_group5
+
+# Renomear as colunas em df_group5
+df_group5 <- df_group5 %>%
+  rename(Status_Entrega_Prazo = entregue_no_prazo,
+         Corredor_do_Armazem = corredor_armazem,
+         Total_Por_Categoria = total.x,
+         Total_Geral = total.y,
+         Percentual = Percentual)
+df_group5
+
+# Transformando para factor a coluna Status_Entrega_Prazo
+df_group5$Status_Entrega_Prazo <- as.factor(df_group5$Status_Entrega_Prazo)
+str(df_group5)
+
+
+rm(df_group1, df_group2, df_group3, df_group4)
+
+
+## Gerando Gráficos Para Responder a Pergunta de Negócio
+
+# Gráfico 1 - Análise em Valores Absolutos (utilizando o dataframe df)
+
+# Gráfico de barras empilhadas para modo_envio
+grafico_modo_envio_abs <- ggplot(cbind(df_categoricas, df_target), aes(x = corredor_armazem, fill = entregue_no_prazo)) +
+  geom_bar(position = "dodge") +
+  scale_fill_manual(values = c("0" = "blue", "1" = "orange")) +
+  labs(title = "Entregas com Base no Corredor do Armazem (Absoluto)",
+       x = "Corredor", y = "Contagem", fill = "Status de Entrega no Prazo") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+#grafico_modo_envio_abs
+
+
+# Gráfico 2 - Análise em Valores Percentuais (utilizando o dataframe df_group5)
+
+grafico_modo_envio_per <- ggplot(df_group5, aes(x = Corredor_do_Armazem, y = Percentual, fill = Status_Entrega_Prazo)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("0" = "red", "1" = "green")) +
+  labs(title = "Entregas com Base no Corredor do Armazem (Percentual)",
+       x = "Corredor", y = "Percentual", fill = "Status de Entrega no Prazo") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+#grafico_modo_envio_per
+
+
+# Combinando os gráficos em um único plot
+grafico_completo <- grafico_modo_envio_abs | grafico_modo_envio_per
+grafico_completo
+
+rm(grafico_modo_envio_abs, grafico_modo_envio_per)
+
+
+# -> Resposta: as respostas estão nos gráficos.
 
 
 
 
+#### DESAFIO:
+#### Como a densidade da variável que representa desconto influencia o status de entrega dos produtos? Crie um gráfico.
+str(df)
+
+# Histograma
+ggplot(df, aes(x = desconto, fill = factor(entregue_no_prazo))) +
+  geom_histogram(aes(y = ..density..), binwidth = 1, position = "identity", alpha = 0.6) +
+  geom_density(alpha = 0.2) +
+  scale_fill_manual(values = c("0" = "red", "1" = "green")) +
+  labs(title = "Influência do Desconto no Status de Entrega",
+       x = "Desconto", y = "Densidade",
+       fill = "Entrega no Prazo") +
+  theme_minimal()
+
+# Densidade
+ggplot(df, aes(x = desconto, color = factor(entregue_no_prazo))) +
+  geom_density(fill = NA, size = 1.2) + # 'fill = NA' remove o preenchimento; 'size' ajusta a largura da linha
+  scale_color_manual(values = c("0" = "red", "1" = "green")) + # Define as cores para cada grupo
+  labs(title = "Densidade do Desconto por Status de Entrega",
+       x = "Desconto", y = "Densidade",
+       color = "Entrega no Prazo") +
+  theme_minimal()
 
 
 
