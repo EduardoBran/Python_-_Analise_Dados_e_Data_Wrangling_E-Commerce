@@ -227,23 +227,28 @@ df$Tempo <- NULL
 total_corridas <- summary(as.factor(df$Dias_da_Semana))
 total_corridas
 
-
+total_corridas <- df %>% 
+  group_by(Dias_da_Semana) %>% 
+  filter(Distancia > 0) %>% 
+  count() %>% 
+  as.data.frame()
+total_corridas
 
 
 
 #### Exercício 10 - Qual a média para cada uma das colunas por dia da semana?
 
-## Calculando Tudo Através do Loop
-
-# Total de Corridas
-total_corridas <- summary(as.factor(df$Dias_da_Semana))
-
-# Calculando a Média de Corridas por Dia da Semana
-media_por_dia <- as.data.frame(total_corridas / nrow(df))
+# Calcular a média para cada uma das colunas por dia da semana
+media_por_dia <- df %>%
+  filter(Distancia > 0) %>%
+  group_by(Dias_da_Semana) %>%
+  summarise(
+    media_distancia = mean(Distancia),
+    media_segundos = mean(Segundos),
+    media_minutos = mean(Minutos),
+    media_min_por_km = mean(Min_Por_Km)
+  )
 media_por_dia
-
-# Exbindo Em um Gráfico de Barras
-barplot(media_por_dia$`total_corridas/nrow(df)`, names.arg = rownames(media_por_dia))
 
 
 rm(media_por_dia, total_corridas)
